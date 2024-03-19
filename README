@@ -1,0 +1,16 @@
+# To make the tcpmon programs in your home directory:
+
+./configure --prefix=$HOME --with-hj-location=$HOME
+make clean
+make install
+
+# $HOME/bin is created with the tcpmon programs
+
+# To make and install the tcpmon programs for all users in the system directories
+# Make and install libhj in the system directories, then:
+
+#./configure 
+#make clean
+#make install
+
+# Please see the file INSTALL for more details.
