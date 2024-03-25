@@ -30,8 +30,8 @@
 *.app
 
 # Ignore make support files
-aclocal.m4
-compile
+#aclocal.m4
+#compile
 #configure
 #config.guess
 config.log
