@@ -33,15 +33,15 @@
 aclocal.m4
 compile
 #configure
-config.guess
+#config.guess
 config.log
 config.status
-config.sub
+#config.sub
 depcomp
 .deps
 #install-sh
 Makefile
-Makefile.in
+#Makefile.in
 missing
 # remove *.spec for libhj
 *.spec
