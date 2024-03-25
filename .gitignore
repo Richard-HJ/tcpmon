@@ -37,12 +37,12 @@
 config.log
 config.status
 #config.sub
-depcomp
+#depcomp
 .deps
 #install-sh
 Makefile
 #Makefile.in
-missing
+#missing
 # remove *.spec for libhj
 *.spec
 #version*
