@@ -32,20 +32,20 @@
 # Ignore make support files
 aclocal.m4
 compile
-configure
+#configure
 config.guess
 config.log
 config.status
 config.sub
 depcomp
 .deps
-install-sh
+#install-sh
 Makefile
 Makefile.in
 missing
 # remove *.spec for libhj
 *.spec
-version*
+#version*
 
 # Ignore CMake
 CMakeLists.txt.user
