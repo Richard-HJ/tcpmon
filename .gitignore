@@ -41,11 +41,12 @@ config.status
 .deps
 #install-sh
 Makefile
-#Makefile.in
+Makefile.in
 #missing
 # remove *.spec for libhj
 *.spec
 #version*
+*.cache
 
 # Ignore CMake
 CMakeLists.txt.user
