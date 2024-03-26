@@ -70,8 +70,8 @@ packaging/debian/changelog
 
 
 # Ignore (my) Programs
-#tcpmon_mon
-#tcpmon_resp
+tcpmon_mon
+tcpmon_resp
 
 #udpmon_bw_mon
 #udpmon_resp
