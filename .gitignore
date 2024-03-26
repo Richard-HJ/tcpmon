@@ -41,7 +41,7 @@ config.status
 .deps
 #install-sh
 Makefile
-Makefile.in
+#Makefile.in
 #missing
 # remove *.spec for libhj
 *.spec
