@@ -30,19 +30,19 @@
 *.app
 
 # Ignore make support files
-#aclocal.m4
+aclocal.m4
 #compile
 #configure
-#config.guess
+config.guess
 config.log
 config.status
-#config.sub
-#depcomp
+config.sub
+depcomp
 .deps
 #install-sh
 Makefile
 #Makefile.in
-#missing
+missing
 # remove *.spec for libhj
 *.spec
 #version*
