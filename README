@@ -1,5 +1,7 @@
 # To make the tcpmon programs in your home directory:
 
+#autoreconf -i Copy missing auxiliary files -f consider all files obsolete
+autoreconf -if
 ./configure --prefix=$HOME --with-hj-location=$HOME
 make clean
 make install
@@ -9,6 +11,8 @@ make install
 # To make and install the tcpmon programs for all users in the system directories
 # Make and install libhj in the system directories, then:
 
+#autoreconf -i Copy missing auxiliary files -f consider all files obsolete
+#autoreconf -if
 #./configure 
 #make clean
 #make install
