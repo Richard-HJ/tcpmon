@@ -213,7 +213,12 @@ foreach $loop_value (@dir_entries){
     $out =`$cmd 2>&1`;
     print  LOG $out;
 
-print LOG "\n --------------------------------------------- \n";    
+    # tc qdisc pacing
+    $cmd = "tc qdisc show dev ".$loop_value;
+    exec_log_print($cmd);
+
+    print     "\n --------------------------------------------- \n";
+    print LOG "\n --------------------------------------------- \n";    
 }
 
 # detailed info
