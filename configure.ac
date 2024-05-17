@@ -2,7 +2,7 @@ dnl --------------------------------
 dnl Initialization macros.
 dnl --------------------------------
 
-AC_INIT([tcpmon],[2.2.1])
+AC_INIT([tcpmon],[2.2.1transit])
 AM_INIT_AUTOMAKE
 
 dnl -----------------------------------------------

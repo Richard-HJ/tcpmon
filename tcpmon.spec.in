@@ -34,6 +34,7 @@ autoreconf -i
 %defattr(-,root,root,-)
 %{_bindir}/tcpmon_mon
 %{_bindir}/tcpmon_resp
+%{_bindir}/tcpmon_transit
 
 %changelog
 * Thu Feb  6 2014 Attila Bogár <attila.bogar@gmail.com>
