@@ -95,7 +95,7 @@
     float run_rate =0.0;                        /* user data rate in Mbit/s */
     int rate_set = 0;                           /* flag =1 if a data rate is given - calc  wait_time_int */
 	int print_cpu_table=0;                      /* =1 to print the CPU useage as a table */
-	int force_set_mss=0;                        /* =1 set MSS to 1460 Bytes */
+	int force_set_mss=0;                        /* >0 value to use to set MSS */
 
     struct param *params;
 
@@ -332,7 +332,6 @@ Ethernet type 0-1500     packet length
     char port_str[128];
     char* remote_addr_text;
     int pkt_len_requested=0;
-    int mss;                                    /* TCP max segment size from getsockopt() */
     int len;
 	int req_len;
 	int resp_len;
@@ -444,10 +443,9 @@ Ethernet type 0-1500     packet length
 	   
 	   /* set the TCP MSS for the connected socket  RHJ hack if MTU discovery not enabled */
 	   /* Set MSS to 1460 Bytes 1500 -20IP -20TCP. You get 1448 as the TCP stack allows for an extra 12-bytes for the TCP Timestamp option to protect against wrapped TCP sequence numbers */
-		if(force_set_mss ==1){
-			mss = 1460;
-			len = sizeof( mss );
-			error = setsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, &mss,  len );
+		if(force_set_mss > 0){
+			len = sizeof( force_set_mss );
+			error = setsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, &force_set_mss,  len );
 			if (error) {
 				perror("setsockopt( TCP_MAXSEG) on TCP socket failed :" );
 				exit(EXIT_FAILURE);
@@ -865,7 +863,7 @@ options:\n\
     -A = <cpu core to use - start from 0 >\n\
 	-B = <bin width of remote histo in us>\n\
 	-C = Print CPU use in a table\n\
-	-F = Force MSS to 1460 Bytes\n\
+	-F = Force MSS to this value\n\
 	-G = <[number of packets to skip:]number of packets on which to return information>\n\
 	-H = Print histograms\n\
 	-L = <[number of packets to skip:]number of LOST packets on which to return information>\n\
@@ -894,9 +892,9 @@ options:\n\
     error=0;
     
 #ifdef IPv6
-    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:G:L:M:P:Q:S:T:hqv6CFHV")) != (char) EOF) {
+    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqv6CHV")) != (char) EOF) {
 #else
-      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:G:L:M:P:Q:S:T:hqvCFHV")) != (char) EOF) {
+      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqvCHV")) != (char) EOF) {
 #endif	
 	switch(c) {
 
@@ -1040,7 +1038,7 @@ options:\n\
 		break;
 
  	    case 'F':
-	        force_set_mss = 1;
+	        force_set_mss = atoi(optarg);
 		break;
 
 	    case 'G':
