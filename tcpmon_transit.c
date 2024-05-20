@@ -1,7 +1,7 @@
 /*
-     tcpmon_send.c     R. Hughes-Jones  The University of Manchester
+     tcpmon_transit.c     R. Hughes-Jones  The University of Manchester
 
-     Aim is to send a stream of TCP messages 
+     Aim is to send a stream of TCP messages to measure the network transit times
      Use TCP socket to:
 	   send a series (-l) of n byte (-p) "messages" to remote node with a specified interpacket interval (-w)
      Print local stats
@@ -9,7 +9,7 @@
 */
 
 /*
-   Copyright (c) 2015,2016,2017,2018,2019,2020 Richard Hughes-Jones, University of Manchester
+   Copyright (c) 2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 Richard Hughes-Jones, University of Manchester
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or
@@ -107,7 +107,7 @@
 /* timing */
     struct timeval before;           	        /* time before measurements */
     struct timeval after;            	        /* time after measurements */
-    struct timeval now;
+    struct timeval start;
 	StopWatch stopwatch_elapsed;                // data transfer time & elapsed time through the transfer
     double delta_t_elapsed = -1;
     double delta_t_elapsed_last = 0;
@@ -308,6 +308,7 @@ Ethernet type 0-1500     packet length
     double time_per_frame;
     double wait_time=0;                         /* time to wait between packets */
     double gap_time=0;                          /* time to wait between sending bursts of packets */
+	double trial_time=0;
 
 /* timers */
     StopWatch wait_sw;                          /* time to wait between sending packets */
@@ -333,6 +334,7 @@ Ethernet type 0-1500     packet length
     char port_str[128];
     char* remote_addr_text;
     int pkt_len_requested=0;
+	int mss;                                    /* TCP max segment size from getsockopt() */
     int len;
 	int req_len;
 	int resp_len;
@@ -495,6 +497,12 @@ Ethernet type 0-1500     packet length
         tcp_data[i] = i;
     }
 
+    gettimeofday(&start, NULL);
+
+//loop over the number of trials   
+ for(trial =0; trial < num_trials; trial++){  
+    if(trial > 0) quiet=1;
+
 /* point params struct at the tcp data buffer */
 	params = (struct param *)&tcp_data;
 
@@ -509,12 +517,7 @@ Ethernet type 0-1500     packet length
         wait_time_int = (int)(10.0*(float)pkt_len*8.0/run_rate);
     }  
 	wait_time = (double) wait_time_int/ (double) 10.0;
-   
-
-
-//loop over the number of trials   
- for(trial =0; trial < num_trials; trial++){  
-   
+      
 /* clear the local stats */
 	delay = 0;
 	frame_num = 0;
@@ -738,6 +741,8 @@ DATA_LOOP_START:
 	/* titles */
 	if(!quiet){
 		/* print titles  */
+		printf(" Trial num; Trial time; 0;");
+		
         printf(" %d bytes; ",pkt_len);
 		if(pkt_len_requested > 0) printf(" length requested too small at %d bytes using %d bytes; ", pkt_len_requested, pkt_len);
 		printf("\n");
@@ -773,6 +778,11 @@ DATA_LOOP_START:
 	}
 
 	/* print local stats */
+	printf(" %d; ", trial);
+	trial_time = (double)(before.tv_sec - start.tv_sec)  + (double)(before.tv_usec - start.tv_usec)/1e6;
+	printf("  %g; ", trial_time);
+	printf(" 0; ");
+	
 	printf(" %d; ", pkt_len);
 	printf(" %d; ", soc_buf_size);
 	printf(" %d; ", loops_done);

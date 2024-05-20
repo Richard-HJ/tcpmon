@@ -332,6 +332,7 @@ Ethernet type 0-1500     packet length
     char port_str[128];
     char* remote_addr_text;
     int pkt_len_requested=0;
+	int mss;                                    /* TCP max segment size from getsockopt() */
     int len;
 	int req_len;
 	int resp_len;
