@@ -666,6 +666,35 @@ Ethernet type 0-1500     packet length
 				}
 			break;
 
+			case CMD_ZEROSTATS:
+				if(verbose)	printf("zerostats\n");
+				/* clear the local stats */
+				num_recv = 0;
+				bytes_recv = 0;
+				net_snmp_Start(  &net_snmp_stats);
+				/* record initial info from NIC */
+				nic_stats_Start( &nic_stats[0]);
+				nic_stats_Start( &nic_stats[1]);
+				/* record initial CPU and interrupt info */
+				CPUStat_Start(  &cpu_stats);
+				/* record time of first frame seen */
+				first =1;
+				//StopWatch_Start(&ipg_sw);		
+				h_clear( &hist[0] ); 
+				h_clear( &hist[1] ); 
+			
+				/* send the OK */
+				resp_len= sizeof( struct param );
+				params->msg_len = resp_len;
+				error = tcp_write(tcp_soc, (char *)params, resp_len, &send_loop);
+				if(error != resp_len) {
+					sprintf(error_msg, 
+						"Error: on data sent GETSTATS: sent %d bytes not %d ", 
+						error, resp_len );
+					perror(error_msg );
+				}		
+			break;
+
 			case CMD_GETSTATS:
 				if(verbose) {
 					printf("get stats resp_len %d\n", params->resp_len);

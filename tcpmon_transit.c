@@ -503,6 +503,17 @@ Ethernet type 0-1500     packet length
  for(trial =0; trial < num_trials; trial++){  
     if(trial > 0) quiet=1;
 
+	/* Write the request to the remote host to clear the stats */
+	params = (struct param *)&tcp_data;
+	params->cmd = i4swap(CMD_ZEROSTATS);
+	req_len = sizeof(struct param);
+	params->msg_len = i4swap(req_len);       
+	resp_len = sizeof(struct param);       
+	params->resp_len = i4swap(resp_len );  /* used as length of the return message */
+	ret = tcp_send_cmd(tcp_soc, (char *)params, req_len, tcp_cpuload_recv, resp_len, "zerostats"); 
+	/* check for no response / error */
+	if(ret < 0) exit(EXIT_FAILURE);
+
 /* point params struct at the tcp data buffer */
 	params = (struct param *)&tcp_data;
 
