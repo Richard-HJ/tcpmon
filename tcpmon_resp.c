@@ -654,6 +654,9 @@ Ethernet type 0-1500     packet length
 					relative_last_sw.t1 = ipg_sw.t2;
 					first =0;
 				}
+				/* record time of last data frame seen */
+				first_last_sw.t2 =ipg_sw.t2;
+
 
 				/* check increment of msg number */
 				inc = frame_num - old_frame_num;
@@ -699,8 +702,7 @@ Ethernet type 0-1500     packet length
 				if(verbose) {
 					printf("get stats resp_len %d\n", params->resp_len);
 				}
-				/* record time of first frame seen */
-				first_last_sw.t2 =ipg_sw.t2;
+				/* calc time between first & last data frame seen */
                 delay = StopWatch_TimeDiff(&first_last_sw);
 				/* record final CPU and interrupt info */
 				CPUStat_Stop( &cpu_stats);
