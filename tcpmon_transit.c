@@ -97,7 +97,8 @@
 	int print_cpu_table=0;                      /* =1 to print the CPU useage as a table */
 	int force_set_mss=0;                        /* >0 value to use to set MSS */
 	int num_trials=1;                           /* number of trials - num times to run the sending loop */
-
+	unsigned int inter_trial_wait=0;            /* time to wait between trials */
+	
     struct param *params;
 
 /* control */
@@ -302,6 +303,7 @@ Ethernet type 0-1500     packet length
 	int delta_total_retrans = 0;
 	//int64 TCPInSegs;                            /* from local snmp */
 	int64 TCPOutSegs;                           /* from local snmp */
+	int tcpi_total_retrans;
 	
 /* timing */
     long delay;                      		    /* time for one message loop */
@@ -667,8 +669,11 @@ DATA_LOOP_START:
 	
 /* record final TCP info */
 	sock_get_tcpinfo(tcp_soc , &tcpInfo);
-
-	tcp_retrans_rate = ((double) tcpInfo.tcpi_total_retrans *100.0)/(double)TCPOutSegs;
+	/* and for this trial */
+	tcpi_total_retrans = tcpInfo.tcpi_total_retrans - tcpi_total_retrans_last;
+	tcpi_total_retrans_last = tcpInfo.tcpi_total_retrans;
+	
+	tcp_retrans_rate = ((double) tcpi_total_retrans *100.0)/(double)TCPOutSegs;
 
 /* calculate the time per packet  */
    time_per_frame =  (double)delta_t_elapsed  / (double)loops_done;
@@ -751,12 +756,12 @@ DATA_LOOP_START:
 /* Do Printout */
 	/* titles */
 	if(!quiet){
-		/* print titles  */
-		printf(" Trial num; Trial time; 0;");
-		
+		/* print titles  */		
         printf(" %d bytes; ",pkt_len);
 		if(pkt_len_requested > 0) printf(" length requested too small at %d bytes using %d bytes; ", pkt_len_requested, pkt_len);
 		printf("\n");
+		
+		printf(" Trial num; Trial time; 0;");
 
 		printf(" pkt len; soc_buf_size; num_sent;");
 		printf(" wait_time; Time/frame us; Send_time; send_data_rate Mbit;" );
@@ -802,7 +807,7 @@ DATA_LOOP_START:
 	printf("  %g; ", delta_t_elapsed);      // Send time
 	printf("  %g; ", data_rate);
 	printf("  %"LONG_FORMAT"d; ", TCPOutSegs); 
-	printf(" %d; ", tcpInfo.tcpi_total_retrans);
+	printf(" %d; ", tcpi_total_retrans);
 	printf("  %g; ", tcp_retrans_rate);
 	printf("  ;");
 
@@ -857,7 +862,9 @@ DATA_LOOP_START:
 	if(get_info){
 		InfoStore_Print(&infostore );
 	}
-
+	
+	// wait between trials
+	if(inter_trial_wait > 0) sleep(inter_trial_wait);
 
  } // end of loop over trials
  
@@ -905,6 +912,7 @@ options:\n\
 	-S = <size of send and receive socket buffers in bytes>\n\
 	-T = <tos bits set - in hex - will be shifted left by 1>\n\
 	-V = print version number\n\
+	-W = <time to wait between trials s>\n\
 	-a = <cpu_mask set bitwise cpu_no 3 2 1 0 in hex>\n\
 	-d = <the destination IP name or IP address a.b.c.d>\n\
 	-e = <end value of wait time in us>\n\
@@ -924,9 +932,9 @@ options:\n\
     error=0;
     
 #ifdef IPv6
-    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:N:P:Q:S:T:hqv6CHV")) != (char) EOF) {
+    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:N:P:Q:S:T:W:hqv6CHV")) != (char) EOF) {
 #else
-      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:N:P:Q:S:T:hqvCHV")) != (char) EOF) {
+      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:N:P:Q:S:T:W:hqvCHV")) != (char) EOF) {
 #endif	
 	switch(c) {
 
@@ -1134,7 +1142,6 @@ options:\n\
 		} else {
 		    error = 1;
 		}
-
 		break;
 
 	    case 'T':
@@ -1151,6 +1158,14 @@ options:\n\
 	        exit(EXIT_SUCCESS);
 		break;
 
+	    case 'W':
+		if (optarg != NULL) {
+		    inter_trial_wait = (unsigned int)atoi(optarg);
+		} else {
+		    error = 1;
+		}
+		break;
+		
 	    default:
 		break;
 	}   /* end of switch */
