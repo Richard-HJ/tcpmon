@@ -6,7 +6,7 @@
 */
 
 #ifdef  INSTANTIATE
-char *TCPMON_VERSION={" TCPmon Version 2.2.1 "};
+char *TCPMON_VERSION={" TCPmon Version 2.2.1transit "};
 
 #else
 extern char *TCPMON_VERSION;

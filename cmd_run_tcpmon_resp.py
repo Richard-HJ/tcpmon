@@ -8,7 +8,19 @@ import pathlib
 import datetime
 import subprocess
 
+tcp_port = 5201
 
+prog = "tcpmon_resp"
+#CamDTN
+#nic = "ens4f1"
+#nic = "ens4f1np1"
+# DTNlon
+#nic = "enp131s0f1"
+#cpu_core = 6
+#AARnetCBR
+nic = "enp3s0"
+cpu_core = 0
+	
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -48,15 +60,7 @@ def run_subproc(cmd, ignore_stderr = False):
 
     return 
 
-tcp_port = 5201
-cpu_core = 6
-prog = "tcpmon_resp"
-#CamDTN
-#nic = "ens4f1"
-#nic = "ens4f1np1"
-# DTNlon
-nic = "enp131s0f1"
-	
+
 def main() -> None:
     parser = init_argparse()
     args = parser.parse_args()
@@ -82,7 +86,10 @@ def main() -> None:
         #affinity = cpu_core + 2*index
         # consecutive core affinity
         affinity = cpu_core+index
-
+        # AARnetCBR 4 cores
+        if(affinity > 3): 
+            affinity = affinity - 4
+        
         affinity = 1 << affinity
 
         # make the command

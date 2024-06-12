@@ -20,7 +20,8 @@ sleep_time_loop = 4
 #prog = "/home/richard/tcpmon/tcpmon_mon "
 #prog = "/home/richard/tcpmon-2.2.1/tcpmon_mon "
 # for DTNlon
-prog = "/home/richard/tcpmon-2.2.1_raw/tcpmon_mon "
+#prog = "/home/richard/tcpmon-2.2.1_raw/tcpmon_mon "
+prog = "/home/richard/tcpmon-transit_times/tcpmon_transit "
 
 #define lists
 proc_list = []
@@ -96,9 +97,19 @@ def init_argparse() -> argparse.ArgumentParser:
         help='time between msg in usec'
     )
     parser.add_argument(
+        "-N", action='store', 
+        default=1, type=int,
+        help='mumber of trials on 1 TCP link'
+    )
+    parser.add_argument(
         "-S", action='store', 
         default=0, type=int,
         help='TCP socket buffer size <0> = TCP autotune'
+    )
+    parser.add_argument(
+        "-W", action='store', 
+        default=0, type=int,
+        help='Time to wait between trials in sec on 1 TCP link'
     )
     parser.add_argument(
         "-6", "--ipv6", action="store_true",
@@ -142,7 +153,10 @@ def setup_tcpmon_mon(args, num_flows, log_file_prefix, cmd_test):
                 
         # make the command
         # 2>&1 Redirect not needed as stderr and stdout directed by Popen()
-        cmd = cmd_test+ " -d "+args.d+ " -u "+str(port)+ " -A "+str(affinity)+ " -i "+str(args.i)+ " -p "+str(args.p)+ " -l "+str(args.l)+ " -w "+str(args.w)+ " -S "+str(args.S)
+        # for tcpmon_mon
+        #cmd = cmd_test+ " -d "+args.d+ " -u "+str(port)+ " -A "+str(affinity)+ " -i "+str(args.i)+ " -p "+str(args.p)+ " -l "+str(args.l)+ " -w "+str(args.w)+ " -S "+str(args.S)
+        # for tcpmon_transit
+        cmd = cmd_test+ " -d "+args.d+ " -u "+str(port)+ " -A "+str(affinity)+ " -i "+str(args.i)+ " -p "+str(args.p)+ " -l "+str(args.l)+ " -w "+str(args.w)+ " -S "+str(args.S)+ " -N "+str(args.N)+ " -W "+str(args.W)
         print(cmd)
         print(date_time, file=outfile)
         print(cmd, file=outfile)
