@@ -4,7 +4,7 @@ tcpmon HISTORY
 			Use Version 2.2.1 of tcpmon with git
 			Add getsockopt() to get the MSS of the created soc and connected TCP socket
 			Add printout of tcp_info.tcpi_snd_mss tcp_info.tcpi_rcv_mss 
-			-A to specify CPU core affinity. tcpmon_mon tcpmon_resp for -i option
+			Add -U option to specify source TCP port tcpmon_mon 
 
 
 
