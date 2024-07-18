@@ -1,25 +1,10 @@
 tcpmon HISTORY
-	Version 2.2.1
-		rich  05 & 06 Apr 23
-			Add -A to specify CPU core affinity. tcpmon_mon tcpmon_resp
-			Remove before-after test printout in timer output
-			Correct cmd_run_tcpmon_resp.py to set the affinity to the proper core 
-				and be able to set affinity for consecutive or even cores
-			Add --oneTest option to run just one set of n TCP flows to cmd_run_tcpmon_multiflow.py 
-				and be able to set affinity for consecutive or even cores
-			Add cmd_tcpmon_bufscan.py cmd_tcpmon_BW_scan.py
-			
-	Version 2.2.0
-		rich  15 Dec 22
-			Add -C to print table of CPU modes. tcpmon_mon tcpmon_resp
-			Add -F to force setting of MSS. tcpmon_mon tcpmon_resp
-			Add -t for time of test and -i interval to print progress info tcpmon_mon
-		rich  3 Sep 22
-			make tcpmon_mon tcpmon_resp both use InfoStore() _resp sends back its measurments
+	Version 2.2.1mtu
+		rich  17 Jul 24
+			Use Version 2.2.1 of tcpmon with git
+			Add getsockopt() to get the MSS of the created soc and connected TCP socket
+			Add printout of tcp_info.tcpi_snd_mss tcp_info.tcpi_rcv_mss 
+			-A to specify CPU core affinity. tcpmon_mon tcpmon_resp for -i option
 
-	Version 2.0.0
-        rich  3 Mar 15
-			Start from udpmon-1.4.1
-			develop tcpmon_send tcpmon_recv
 
 
