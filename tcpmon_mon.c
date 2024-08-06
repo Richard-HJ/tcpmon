@@ -332,6 +332,8 @@ Ethernet type 0-1500     packet length
     char port_str[128];
     char* remote_addr_text;
     int pkt_len_requested=0;
+    int mss;                                    /* TCP max segment size from getsockopt() */
+    int connected_mss;                          /* TCP max segment size from getsockopt() */
     int len;
 	int req_len;
 	int resp_len;
@@ -442,7 +444,7 @@ Ethernet type 0-1500     packet length
        /* we dont need to bind() as we dont care what the local port number is */
 	   
 	   /* set the TCP MSS for the connected socket  RHJ hack if MTU discovery not enabled */
-	   /* Set MSS to 1460 Bytes 1500 -20IP -20TCP. You get 1448 as the TCP stack allows for an extra 12-bytes for the TCP Timestamp option to protect against wrapped TCP sequence numbers */
+	   /* If MTU is Bytes 1500 -20IP -20TCP gives 1460 but you get 1448 as the TCP stack allows for an extra 12-bytes for the TCP Timestamp option to protect against wrapped TCP sequence numbers */
 		if(force_set_mss > 0){
 			len = sizeof( force_set_mss );
 			error = setsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, &force_set_mss,  len );
@@ -451,6 +453,10 @@ Ethernet type 0-1500     packet length
 				exit(EXIT_FAILURE);
 			}
 		}
+
+		/* find the TCP MSS for the created socket */
+		len = sizeof( mss );
+		ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &mss, (socklen_t *) &len );
 
        /* make a link to the remote TCP port */
 		error = connect(tcp_soc, result->ai_addr, ipfamily_addr_len );
@@ -473,13 +479,13 @@ Ethernet type 0-1500     packet length
     }
 
 	/* find the TCP MSS for the connected socket */
-	len = sizeof( mss );
-	ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &mss, (socklen_t *) &len );
+	len = sizeof( connected_mss );
+	ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &connected_mss, (socklen_t *) &len );
 	
 	if(!quiet){
 		printf(" The destination IP name: %s IP address: %s\n", dest_ip_address, remote_addr_text);
 		printf(" The destination TCP port is   %d %x\n", dest_tcp_port, dest_tcp_port);
-		printf(" The TCP maximum segment size is   %d\n", mss);
+		printf(" The TCP maximum segment size created soc %d  connected soc %d\n", mss, connected_mss);
 	}
 
 /* Here we build the TCP message, ready for sending.
