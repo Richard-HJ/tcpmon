@@ -309,6 +309,7 @@ Ethernet type 0-1500     packet length
     int len = 0;
     int value = 0;			                    /* parameter for set soc options */
 	int mss;                                    /* TCP max segment size from getsockopt() */
+    int connected_mss;                          /* TCP max segment size from getsockopt() */
     int cmd;
 	int send_loop = 0;
 	int extended_output = 1;
@@ -449,11 +450,10 @@ Ethernet type 0-1500     packet length
 		exit(EXIT_FAILURE);
 	}
 	/* set the TCP MSS for the connected socket  RHJ hack if MTU discovery not enabled */
-	/* Set MSS to 1460 Bytes 1500 -20IP -20TCP. You get 1448 as the TCP stack allows for an extra 12-bytes for the TCP Timestamp option to protect against wrapped TCP sequence numbers */
-	if(force_set_mss ==1){
-		mss = 1460;
-		len = sizeof( mss );
-		error = setsockopt( listen_soc, IPPROTO_TCP, TCP_MAXSEG, &mss,  len );
+	/* If MTU is Bytes 1500 -20IP -20TCP gives 1460 but you get 1448 as the TCP stack allows for an extra 12-bytes for the TCP Timestamp option to protect against wrapped TCP sequence numbers */
+	if(force_set_mss > 0){
+		len = sizeof( force_set_mss );
+		error = setsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, &force_set_mss,  len );
 		if (error) {
 			perror("setsockopt( TCP_MAXSEG) on Listen socket failed :" );
 			exit(EXIT_FAILURE);
@@ -535,7 +535,7 @@ Ethernet type 0-1500     packet length
 		ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &mss, (socklen_t *) &len );
 	
 		if(!quiet){
-		printf(" The TCP maximum segment size is   %d\n", mss);
+			printf(" The TCP maximum segment size created soc %d  connected soc %d\n", mss, connected_mss);
 		}
 		if(verbose) {
 			printf("Connection accepted \n");

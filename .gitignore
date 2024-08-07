@@ -44,7 +44,7 @@ Makefile
 Makefile.in
 missing
 # remove *.spec for libhj
-*.spec
+#*.spec
 #version*
 *.cache
 

@@ -63,6 +63,7 @@
 /* parameters */
     int dest_tcp_port = 0x3799;                 /* 14233 base10 */
     char dest_ip_address[HOSTNAME_MAXLEN];
+    int source_tcp_port = 0;                    /* local TCP port if not 0 */
     int pkt_len = 10000;                		/* length of request packet */
     int wait_time_max = 0;       	            /* max length of wait time used for looping over inter packet wait */
     int interval_stats_sec =0;      	        /* time interval between reading TCP stats */ 
@@ -278,10 +279,13 @@ Ethernet type 0-1500     packet length
               2048       = IP
 */
     struct sockaddr *soc_address;
+    struct sockaddr *source_soc_address;        /* for source (local) socket */
     SOC_INFO soc_info;
     unsigned int flags = 0;          	        /* flags for sendto() recvfrom() select() */
     int ipfamily_addr_len;                      /* length of soc_recv_address - depends on IP family IPv4, IPv6*/
+    int source_ipfamily_addr_len;               /* length of soc_recv_address - depends on IP family IPv4, IPv6*/
     struct addrinfo hint_options, *result;      /* for getaddrinfo() */
+    struct addrinfo *source_result;             /* for getaddrinfo() for source (local) socket*/
     struct addrinfo *rp;                        /* for debug listing */
 
 /* statistics */
@@ -458,6 +462,39 @@ Ethernet type 0-1500     packet length
 		len = sizeof( mss );
 		ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &mss, (socklen_t *) &len );
 
+		/* assign a TCP port to the source (local) TCP socket */
+		if(source_tcp_port > 0){
+			/* create the socket address with the correct IP family for listening to TCP packets */
+			sprintf(port_str, "%d", source_tcp_port);
+
+			/* clear then load the hints */
+			bzero(&hint_options, sizeof(struct addrinfo) );
+			hint_options.ai_family = AF_INET;
+#ifdef	IPV6
+			if(use_IPv6 == 1) hint_options.ai_family = AF_INET6;
+#endif
+			hint_options.ai_socktype = SOCK_STREAM;
+			/* set flags as if a server to allow the source port to be defined*/
+			hint_options.ai_flags = AI_PASSIVE;
+			error = getaddrinfo(NULL, port_str, &hint_options, &source_result);   
+//			error = getaddrinfo(dest_ip_address, port_str, &hint_options, &source_result);   
+			if(error){
+				snprintf(error_msg, ERROR_MSG_SIZE,
+					"Error: Could not use address family on local socket %s", gai_strerror(error) );
+				perror(error_msg );
+				exit(EXIT_FAILURE);
+			}
+
+			/* get the length of the sock address struct */
+			source_ipfamily_addr_len = source_result->ai_addrlen;
+			source_soc_address = source_result->ai_addr;
+			error = bind(tcp_soc, source_soc_address, source_ipfamily_addr_len );
+			if (error) {
+				perror("Bind of port to source (local) TCP IP socket failed :" );
+				exit(EXIT_FAILURE);
+			}
+		}
+
        /* make a link to the remote TCP port */
 		error = connect(tcp_soc, result->ai_addr, ipfamily_addr_len );
 		if (error == 0) break; /* connected */
@@ -484,7 +521,11 @@ Ethernet type 0-1500     packet length
 	
 	if(!quiet){
 		printf(" The destination IP name: %s IP address: %s\n", dest_ip_address, remote_addr_text);
-		printf(" The destination TCP port is   %d %x\n", dest_tcp_port, dest_tcp_port);
+		printf(" The destination TCP port is   %d 0x%x", dest_tcp_port, dest_tcp_port);
+		if(source_tcp_port > 0){
+			printf(" The source TCP port is  %d 0x%x", source_tcp_port, source_tcp_port);
+		}
+		printf(" \n");
 		printf(" The TCP maximum segment size created soc %d  connected soc %d\n", mss, connected_mss);
 	}
 
@@ -878,6 +919,7 @@ options:\n\
 	-Q = <DSCP QoS bits set - in hex >\n\
 	-S = <size of send and receive socket buffers in bytes>\n\
 	-T = <tos bits set - in hex - will be shifted left by 1>\n\
+	-U = <source tcp port no - default not bound>\n\
 	-V = print version number\n\
 	-a = <cpu_mask set bitwise cpu_no 3 2 1 0 in hex>\n\
 	-d = <the destination IP name or IP address a.b.c.d>\n\
@@ -898,9 +940,9 @@ options:\n\
     error=0;
     
 #ifdef IPv6
-    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqv6CHV")) != (char) EOF) {
+    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:U:hqv6CHV")) != (char) EOF) {
 #else
-      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqvCHV")) != (char) EOF) {
+      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:U:hqvCHV")) != (char) EOF) {
 #endif	
 	switch(c) {
 
@@ -1107,6 +1149,14 @@ options:\n\
 		if (optarg != NULL) {
 		    sscanf(optarg, "%x", &tos_bits);
 		    tos_set = 1;
+		} else {
+		    error = 1;
+		}
+		break;
+
+	    case 'U':
+		if (optarg != NULL) {
+		    source_tcp_port =  atoi(optarg); 
 		} else {
 		    error = 1;
 		}
