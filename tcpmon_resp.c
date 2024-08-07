@@ -92,7 +92,7 @@
     char *interface_name[2];                     /* name of the interface e.g. eth0 */
 	int interface_index = 0;                     /* which NIC interface to use */
     int chunk_size = 65536;                      /*read chunk size bytes */
-	int force_set_mss=0;                         /* =1 set MSS to 1460 Bytes */
+	int force_set_mss=0;                         /* >0 set MSS to given value */
 	
     struct param *params;
     struct param *params_tcpinfo;
@@ -459,6 +459,10 @@ Ethernet type 0-1500     packet length
 			exit(EXIT_FAILURE);
 		}
 	}
+	/* find the TCP MSS for the socket */
+	len = sizeof( mss );
+	ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &mss, (socklen_t *) &len );
+
 /* Open the UDP IP socket. - for NIC stats */
     soc_info.soc_buf_size = 0;
     soc_info.precidence_bits = 0;
@@ -531,8 +535,8 @@ Ethernet type 0-1500     packet length
 		error = setsockopt(tcp_soc, IPPROTO_TCP, TCP_NODELAY, &value, len);
 
 		/* find the TCP MSS for the connected socket */
-		len = sizeof( mss );
-		ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &mss, (socklen_t *) &len );
+		len = sizeof( connected_mss );
+		ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &connected_mss, (socklen_t *) &len );
 	
 		if(!quiet){
 			printf(" The TCP maximum segment size created soc %d  connected soc %d\n", mss, connected_mss);
