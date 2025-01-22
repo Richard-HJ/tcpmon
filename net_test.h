@@ -45,6 +45,9 @@
      25 Jul 03 Rich   Change order of entries in struct param to cope with 64 byte min
                       length of request for IA-64 when all int are 8 bytes.
 */
+#define _GNU_SOURCE
+#include <sched.h>              /* for affinity */
+#include <assert.h>             /* for affinity */
 
 #include <stdio.h>
 #include <string.h>

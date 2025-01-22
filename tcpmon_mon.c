@@ -41,6 +41,7 @@
 
 
 #define INSTANTIATE true
+//RHJ
 
 #include "net_test.h"                            /* common inlcude file */
 #include "version.h"                             /* common inlcude file */
@@ -91,7 +92,10 @@
     int info_lines = 0;                         /* number of InfoStore lines -G option */
     int n_to_skip=0;                            /* number of packets to skip before recording data for -G option */
     int log_lost=0;                             /* =1 to log LOST packets only -L option */
-    long cpu_affinity_mask;                     /* cpu affinity mask set bitwise cpu_no 3 2 1 0 in hex */
+//RHJ
+    int cpu_affinity_core =-1;                  /* cpu affinity core -1 = core number not used this time */
+    cpu_set_t cpu_affinity_cpuset;              /* cpu affinity from -a */
+	int affinity_cpuset_inuse =0;               /* cpu_affinity_cpuset defined */
     float run_rate =0.0;                        /* user data rate in Mbit/s */
     int rate_set = 0;                           /* flag =1 if a data rate is given - calc  wait_time_int */
 	int print_cpu_table=0;                      /* =1 to print the CPU useage as a table */
@@ -370,7 +374,12 @@ Ethernet type 0-1500     packet length
     hist[0].low_lim = low_lim;
 
 /* set the CPU affinity of this process*/
-    set_cpu_affinity (cpu_affinity_mask, quiet);
+//RHJ
+	if(affinity_cpuset_inuse != 0){
+		set_cpu_affinity_cpuset (&cpu_affinity_cpuset, quiet);
+	}else {
+		set_cpu_affinity_num (cpu_affinity_core, quiet);  // cover setting and not set cases
+	}
 
 /* initalise and calibrate the time measurement system */
     ret = RealTime_Initialise(quiet);
@@ -860,7 +869,6 @@ static void parse_command_line (int argc, char **argv)
     char cmd_text[128];
     char *str_loc;
     float value;
-	int core;
 
     char *help ={
 "Usage: udpmon_bw_mon -option<parameter> [...]\n\
@@ -906,7 +914,9 @@ options:\n\
 
 	    case 'a':
 		if (optarg != NULL) {
-		    sscanf(optarg, "%lx", &cpu_affinity_mask);
+			//RHJ
+			hex2cpuset( &cpu_affinity_cpuset , optarg);
+			affinity_cpuset_inuse = 1;
 		} else {
 		    error = 1;
 		}
@@ -1024,8 +1034,8 @@ options:\n\
 		
 	    case 'A':
 		if (optarg != NULL) {
-		   core = atoi(optarg);
-		   cpu_affinity_mask = 1<<core;
+			//RHJ
+		   cpu_affinity_core = atoi(optarg);  //RHJ
 		} else {
 		    error = 1;
 		}

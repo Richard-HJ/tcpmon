@@ -88,7 +88,10 @@
     int timer_prog_lifetime =0;                  /* num sec to run the program recving data */
     int quiet = 0;                               /* set =1 for just printout of results - monitor mode */
     int64 n_to_skip=0;                           /* number of packets to skip before recording data for -G option */
-    long cpu_affinity_mask;                      /* cpu affinity mask set bitwise cpu_no 3 2 1 0 in hex */
+//RHJ
+    int cpu_affinity_core =-1;                  /* cpu affinity core -1 = core number not used this time */
+    cpu_set_t cpu_affinity_cpuset;              /* cpu affinity from -a */
+	int affinity_cpuset_inuse =0;               /* cpu_affinity_cpuset defined */
     char *interface_name[2];                     /* name of the interface e.g. eth0 */
 	int interface_index = 0;                     /* which NIC interface to use */
     int chunk_size = 65536;                      /*read chunk size bytes */
@@ -368,7 +371,12 @@ Ethernet type 0-1500     packet length
     hist[0].low_lim = low_lim;
 
 /* set the CPU affinity of this process*/
-    set_cpu_affinity (cpu_affinity_mask, quiet);
+//RHJ
+	if(affinity_cpuset_inuse != 0){
+		set_cpu_affinity_cpuset (&cpu_affinity_cpuset, quiet);
+	}else {
+		set_cpu_affinity_num (cpu_affinity_core, quiet);  // cover setting just 1 core -A
+	}
 
 /* initalise and calibrate the time measurement system */
     ret = RealTime_Initialise(1);
@@ -866,7 +874,6 @@ static void parse_command_line (int argc, char **argv)
     int i;
     char cmd_text[128];
     char *str_loc;
-	int core;
 
     error =0;
     char *help ={
@@ -904,7 +911,9 @@ options:\n\
 
 	    case 'a':
 		if (optarg != NULL) {
-		    sscanf(optarg, "%lx", &cpu_affinity_mask);
+			//RHJ
+			hex2cpuset( &cpu_affinity_cpuset , optarg);
+			affinity_cpuset_inuse = 1;
 		} else {
 		    error = 1;
 		}
@@ -966,8 +975,8 @@ options:\n\
 
 	    case 'A':
 		if (optarg != NULL) {
-		   core = atoi(optarg);
-		   cpu_affinity_mask = 1<<core;
+			//RHJ
+		   cpu_affinity_core = atoi(optarg);
 		} else {
 		    error = 1;
 		}

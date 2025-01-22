@@ -1,4 +1,9 @@
 tcpmon HISTORY
+	Version 2.2.1 branch cpuset_affinity
+		rich  22 Jan 25
+			net_test.h has #define _GNU_SOURCE <sched.h> and <assert.h>
+			use cpu_set_t cpu_affinity_cpuset to allow >64 cores
+		
 	Version 2.2.1
 		rich  05 & 06 Apr 23
 			Add -A to specify CPU core affinity. tcpmon_mon tcpmon_resp
