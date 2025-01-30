@@ -9,7 +9,7 @@
 */
 
 /*
-   Copyright (c) 2015,2016,2017,2018,2019,2020 Richard Hughes-Jones, University of Manchester
+   Copyright (c) 2015 to 2025 Richard Hughes-Jones, University of Manchester
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or
@@ -525,7 +525,7 @@ Ethernet type 0-1500     packet length
 			printf("Wait for connection  \n");
 		}      
         /* wait for an incoming TCP connection request and accept it */
-		tcp_soc = accept(listen_soc,  (struct  sockaddr*)&soc_recv_address, (socklen_t *)&ipfamily_addr_len );
+		tcp_soc = accept(listen_soc, soc_recv_address, (socklen_t *)&ipfamily_addr_len );
 		if (tcp_soc < 0) {
 			if(verbose) {
 				perror("Connection accept on TCP IP socket failed :" );
@@ -543,7 +543,7 @@ Ethernet type 0-1500     packet length
 		ret = getsockopt( tcp_soc, IPPROTO_TCP, TCP_MAXSEG, (char*) &mss, (socklen_t *) &len );
 	
 		if(!quiet){
-		printf(" The TCP maximum segment size is   %d\n", mss);
+		printf(" The TCP maximum segment size is %d from host: %s\n", mss, sock_ntop(soc_recv_address));
 		}
 		if(verbose) {
 			printf("Connection accepted \n");
