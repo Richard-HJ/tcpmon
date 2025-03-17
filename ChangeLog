@@ -1,4 +1,8 @@
 tcpmon HISTORY
+
+		rich 17 Mar 25
+			tcpmon_mon.c Add -N option - Print network i/f stats in a table.
+			use print_intf_table to determine what gets printed
 	
 		rich 30 Jan 25
 			Correct passing of soc_recv_address to accept() in tcpmon_resp.c

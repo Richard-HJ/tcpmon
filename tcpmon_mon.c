@@ -99,6 +99,7 @@
     float run_rate =0.0;                        /* user data rate in Mbit/s */
     int rate_set = 0;                           /* flag =1 if a data rate is given - calc  wait_time_int */
 	int print_cpu_table=0;                      /* =1 to print the CPU useage as a table */
+	int print_intf_table=0;                     /* =1 to print the i/f stats as a table */
 	int force_set_mss=0;                        /* >0 value to use to set MSS */
 
     struct param *params;
@@ -764,8 +765,16 @@ DATA_LOOP_START:
 		printf(" Recv time/Frame; recv_time; recv_data_rate Mbit;");
 		printf("  ;");
 
-		net_snmp_print_info( net_if_info, &snmp_info, 3, 'L');
-		net_snmp_print_info( net_if_info, &snmp_info, 3, 'R');
+		if(!print_intf_table){
+			/* print net and snmp titles */
+			net_snmp_print_info( net_if_info, &snmp_info, 3, 'L');
+			net_snmp_print_info( net_if_info, &snmp_info, 3, 'R');
+		}
+		else{
+			/* print just snmp titles */
+			snmp_print_info( net_if_info, &snmp_info, 3, 'L');
+			snmp_print_info( net_if_info, &snmp_info, 3, 'R');
+		}
 		
 		nic_stats_print_info(&nic_info[0], 1, 'R');
 		nic_stats_print_info(&nic_info[1], 1, 'R');
@@ -806,11 +815,18 @@ DATA_LOOP_START:
 	printf("  %g; ", data_rate);
 	printf("  ;");
 	
-	/* print local interface & snmp info */
-	net_snmp_print_info( net_if_info, &snmp_info, 4, 'L');    
-	/* print remote interface & snmp info */
-	net_snmp_print_info( net_if_info_recv, &snmp_info_recv, 4, 'R');
-
+	if(!print_intf_table){
+		/* print local interface & snmp info */
+		net_snmp_print_info( net_if_info, &snmp_info, 4, 'L');    
+		/* print remote interface & snmp info */
+		net_snmp_print_info( net_if_info_recv, &snmp_info_recv, 4, 'R');
+	}
+	else{
+		/* print just snmp info */
+		snmp_print_info( net_if_info, &snmp_info, 4, 'L');
+		snmp_print_info( net_if_info, &snmp_info, 4, 'R');
+	}
+	
 	/* print remote NIC info */
 	nic_stats_print_info(&nic_info[0], 2, 'R');
 	nic_stats_print_info(&nic_info[1], 2, 'R');
@@ -826,6 +842,12 @@ DATA_LOOP_START:
 	printf("  \n" );
 	fflush(stdout);
 
+	if(print_intf_table){
+		/* print just net i/f info as a table */
+		net_print_info( net_if_info, &snmp_info, 4, 'L');
+		net_print_info( net_if_info, &snmp_info, 4, 'R');
+	}
+	
 	if(print_cpu_table){
 		/* print total local CPU info */
 		CPUStat_print_cpu_info( cpuinfo, 3, 'L', extended_output);
@@ -881,6 +903,7 @@ options:\n\
 	-G = <[number of packets to skip:]number of packets on which to return information>\n\
 	-H = Print histograms\n\
 	-L = <[number of packets to skip:]number of LOST packets on which to return information>\n\
+	-N = Print network i/f stats in a table\n\
 	-M = <min (low limit) of remote histo in us>\n\
 	-P = <precidence bits set - in hex - will be shifted left by 9>\n\
 	-Q = <DSCP QoS bits set - in hex >\n\
@@ -906,9 +929,9 @@ options:\n\
     error=0;
     
 #ifdef IPv6
-    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqv6CHV")) != (char) EOF) {
+    while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqv6CHNV")) != (char) EOF) {
 #else
-      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqvCHV")) != (char) EOF) {
+      while ((c = getopt(argc, argv, "a:d:e:g:i:l:n:p:r:t:u:w:A:B:F:G:L:M:P:Q:S:T:hqvCHNV")) != (char) EOF) {
 #endif	
 	switch(c) {
 
@@ -1084,6 +1107,10 @@ options:\n\
 		} else {
 		    error = 1;
 		}
+		break;
+
+ 	    case 'N':
+	        print_intf_table = 1;
 		break;
 
 	    case 'P':
