@@ -824,7 +824,7 @@ DATA_LOOP_START:
 	else{
 		/* print just snmp info */
 		snmp_print_info( net_if_info, &snmp_info, 4, 'L');
-		snmp_print_info( net_if_info, &snmp_info, 4, 'R');
+		snmp_print_info( net_if_info_recv, &snmp_info_recv, 4, 'R');
 	}
 	
 	/* print remote NIC info */
@@ -844,8 +844,10 @@ DATA_LOOP_START:
 
 	if(print_intf_table){
 		/* print just net i/f info as a table */
+		net_print_info( net_if_info, &snmp_info, 3, 'L');
 		net_print_info( net_if_info, &snmp_info, 4, 'L');
-		net_print_info( net_if_info, &snmp_info, 4, 'R');
+		net_print_info( net_if_info_recv, &snmp_info_recv, 3, 'R');
+		net_print_info( net_if_info_recv, &snmp_info_recv, 4, 'R');
 	}
 	
 	if(print_cpu_table){
